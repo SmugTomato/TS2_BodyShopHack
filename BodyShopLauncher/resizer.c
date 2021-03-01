@@ -8,7 +8,7 @@
 #define DEFAULT_HEIGHT 1024
 #define DEFAULT_PROC_NAME L"TS2BodyShop.exe"
 #define DEFAULT_EXE_NAME "TS2BodyShop.exe"
-#define DEFAULT_DLL_NAME "TS2BodyShopHack.dll"
+#define DEFAULT_DLL_NAME "BodyShopHack.dll"
 #define MAX_STR_LEN 1024
 
 struct ResizerProps {
