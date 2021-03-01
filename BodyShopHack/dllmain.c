@@ -38,16 +38,19 @@ DWORD WINAPI MainThread(LPVOID param)
 {
     boolean keepRunning = TRUE;
     char* modBase = (char*)GetModuleHandleA(NULL);
-    
-//    MessageBoxA(NULL, "Click OK once Body Shop is properly loaded\n\
-//(When the loading screen is gone)", "Info", MB_OK);
 
     char s[256] = { 0 };
     int code = initPointers(modBase);
 
     if (code != 0) {
         keepRunning = FALSE;
-        MessageBoxA(NULL, "Failed to initialize one or more pointers\nExiting...", NULL, MB_OK | MB_ICONERROR);
+        MessageBoxA(
+            NULL,
+            "Failed to initialize one or more pointers\n"
+            "Try increasing the maxRetries value in the config file",
+            NULL,
+            MB_OK | MB_ICONERROR
+        );
     }
 
     while (keepRunning)
@@ -73,15 +76,15 @@ BOOL WINAPI DllMain(HINSTANCE hModule, DWORD fwdReason, LPVOID lpReserved)
 
 int initPointers(char* modBase)
 {
-    mouseX = (int*)getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x208);
-    mouseY = (int*)getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x20C);
-    age = (int*)getFinalAddress(4, modBase, 0x7AB15C, 0x90, 0x1D8, 0x28, 0x280);
-    gender = (int*)getFinalAddress(4, modBase, 0x7AB15C, 0x90, 0x1D8, 0x28, 0x284);
-    uiToggle = (boolean*)getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x133);
-    bgToggle = (boolean*)getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x134);
-    freecamToggle = (boolean*)getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x135);
-    freeCam = (FreeCamValues*)getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x138);
-    staticCam = (StaticCamValues*)getFinalAddress(3, modBase, 0x7BC188, 0x130, 0xA0, 0x50);
+    mouseX        = getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x208);
+    mouseY        = getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x20C);
+    age           = getFinalAddress(4, modBase, 0x7AB15C, 0x90, 0x1D8, 0x28, 0x280);
+    gender        = getFinalAddress(4, modBase, 0x7AB15C, 0x90, 0x1D8, 0x28, 0x284);
+    uiToggle      = getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x133);
+    bgToggle      = getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x134);
+    freecamToggle = getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x135);
+    freeCam       = getFinalAddress(6, modBase, 0x7AB114, 0x28, 0x5C, 0x2AC, 0x8, 0x3C, 0x138);
+    staticCam     = getFinalAddress(3, modBase, 0x7BC188, 0x130, 0xA0, 0x50);
 
     int a = 0;
     if (mouseX == NULL) a++;
@@ -108,7 +111,7 @@ void fixStaticCam()
 {
     // No use trying to change these values in free cam mode
     // They get set somewhere else in Body Shop code
-    //if (freecamToggle) return;
+    if (freecamToggle) return;
 
     staticCam->moveX = 3.75f;
     staticCam->moveZ = 3.75f;

@@ -6,14 +6,10 @@
 
 void* getFinalAddress(uint32_t n_hops, char* base_addr, int init_offset, ...)
 {
-    //char* ptr;
-    //uint32_t address = (uint32_t)base_addr + init_offset;
     uint32_t address;
 
     va_list valist;
     int n_tries = 0;
-
-    //MessageBoxA(NULL, "TEST", "TEST", MB_OK);
 
     while(n_tries++ < MAX_RETRIES)
     {
