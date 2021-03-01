@@ -9,9 +9,9 @@ typedef struct _FreeCamValues {
     float offsetX;
     float zoom;
     float offsetY;
-    float lookatZ;
-    float lookatX;
-    float lookatY;
+    float rotAroundZ;
+    float rotAroundX;
+    float rotAroundY;
 } FreeCamValues;
 
 typedef struct _StaticCamValues {
@@ -139,7 +139,8 @@ void handleInput()
         staticOffset.y += staticStepSize;
     }
     if (GetAsyncKeyState(VK_HOME) & 0x1) {
-        sprintf_s(msg, 1024, "X: %f\nZ: %f\nY: %f", staticOffset.x, staticOffset.z, staticOffset.y);
+        sprintf_s(msg, 1024, "X: %f, Z: %f, Y: %f", staticOffset.x, staticOffset.z, staticOffset.y);
+        sprintf_s(msg, 1024, "%s\nX: %f, Z: %f, Y: %f", msg, staticCam->x, staticCam->z, staticCam->y);
         MessageBoxA(NULL, msg, "Static Cam Offsets", MB_OK);
     }
 }
