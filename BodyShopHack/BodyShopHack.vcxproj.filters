@@ -21,10 +21,18 @@
     <ClCompile Include="HackHelper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LoadConfig.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HackHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BodyShopHack.ini">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

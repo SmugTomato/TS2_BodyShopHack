@@ -15,9 +15,9 @@ typedef struct _FreeCamValues {
 } FreeCamValues;
 
 typedef struct _StaticCamValues {
-    float moveZ;
-    float moveX;
-    float moveY;
+    float z;
+    float x;
+    float y;
 } StaticCamValues;
 
 int* mouseX;
@@ -29,6 +29,9 @@ boolean* bgToggle;
 boolean* freecamToggle;
 FreeCamValues* freeCam;
 StaticCamValues* staticCam;
+StaticCamValues staticOriginal;
+StaticCamValues staticOffset;
+float staticStepSize;
 
 int initPointers(char* modBase);
 void fixStaticCam();
@@ -52,6 +55,13 @@ DWORD WINAPI MainThread(LPVOID param)
             MB_OK | MB_ICONERROR
         );
     }
+
+    staticOffset.x = 0;
+    staticOffset.z = 0;
+    staticOffset.y = 0;
+    staticStepSize = 0.05f;
+
+    memcpy(&staticOriginal, staticCam, 3 * sizeof(float));
 
     while (keepRunning)
     {
@@ -102,8 +112,35 @@ int initPointers(char* modBase)
 
 void handleInput()
 {
+    char msg[1024] = { 0 };
     if (GetAsyncKeyState(VK_END) & 0x1) {
         *uiToggle = !(*uiToggle);
+    }
+    if (GetAsyncKeyState(VK_LEFT) & 0x1) {
+        staticOffset.z += staticStepSize * 0.7f;
+        staticOffset.x -= staticStepSize * 0.7f;
+    }
+    if (GetAsyncKeyState(VK_RIGHT) & 0x1) {
+        staticOffset.z -= staticStepSize * 0.7f;
+        staticOffset.x += staticStepSize * 0.7f;
+    }
+    if (GetAsyncKeyState(VK_UP) & 0x1) {
+        staticOffset.z -= staticStepSize * 0.7f;
+        staticOffset.x -= staticStepSize * 0.7f;
+    }
+    if (GetAsyncKeyState(VK_DOWN) & 0x1) {
+        staticOffset.z += staticStepSize * 0.7f;
+        staticOffset.x += staticStepSize * 0.7f;
+    }
+    if (GetAsyncKeyState(VK_DELETE) & 0x1) {
+        staticOffset.y -= staticStepSize;
+    }
+    if (GetAsyncKeyState(VK_INSERT) & 0x1) {
+        staticOffset.y += staticStepSize;
+    }
+    if (GetAsyncKeyState(VK_HOME) & 0x1) {
+        sprintf_s(msg, 1024, "X: %f\nZ: %f\nY: %f", staticOffset.x, staticOffset.z, staticOffset.y);
+        MessageBoxA(NULL, msg, "Static Cam Offsets", MB_OK);
     }
 }
 
@@ -111,9 +148,9 @@ void fixStaticCam()
 {
     // No use trying to change these values in free cam mode
     // They get set somewhere else in Body Shop code
-    if (freecamToggle) return;
+    //if (freecamToggle) return;
 
-    staticCam->moveX = 3.75f;
-    staticCam->moveZ = 3.75f;
-    staticCam->moveY = 1.425f;
+    staticCam->x = staticOriginal.x + staticOffset.x;
+    staticCam->z = staticOriginal.z + staticOffset.z;
+    staticCam->y = staticOriginal.y + staticOffset.y;
 }

@@ -21,9 +21,13 @@
   <ItemGroup>
     <ClCompile Include="dllmain.c" />
     <ClCompile Include="HackHelper.c" />
+    <ClCompile Include="LoadConfig.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HackHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BodyShopHack.ini" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
