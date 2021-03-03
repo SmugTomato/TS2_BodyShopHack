@@ -21,9 +21,6 @@
     <ClCompile Include="HackHelper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoadConfig.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HackHelper.h">

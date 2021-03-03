@@ -37,7 +37,7 @@ void* getFinalAddress(uint32_t n_hops, BYTE* base_addr, int maxRetries, ...)
     return (void*)address;
 }
 
-BOOLEAN parseBoolean(const char* input, BOOLEAN bDefault)
+BOOLEAN parseBooleanA(const char* input, BOOLEAN bDefault)
 {
     // Case insensitive string compares
     if (!lstrcmpiA(input, "True")) {
@@ -59,4 +59,16 @@ BOOLEAN parseBooleanW(const WCHAR* input, BOOLEAN bDefault)
         return FALSE;
     }
     return bDefault;
+}
+
+float parseFloatW(const WCHAR* in, float fDefault)
+{
+    float f;
+    int code;
+    code = swscanf_s(in, L"%f", &f);
+    if (code <= 0)
+    {
+        return fDefault;
+    }
+    return f;
 }

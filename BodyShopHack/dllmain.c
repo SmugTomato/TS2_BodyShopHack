@@ -3,10 +3,11 @@
 
 #define CONFIG_FILE L"BodyShopHack.ini"
 #define CFG_GLOBAL L"Global"
+#define CFG_FIXES L"Fixes"
 #define CFG_ADULT L"Adult"
 #define CFG_TEEN L"Teen"
 #define CFG_CHILD L"Child"
-#define CFG_TODDLER L"Toddle"
+#define CFG_TODDLER L"Toddler"
 
 int* mouseX;
 int* mouseY;
@@ -19,16 +20,16 @@ BOOLEAN* freecamToggle;
 
 FreeCamValues* freeCam;
 StaticCamValues* staticCam;
-StaticCamValues staticOriginal;
 StaticCamValues staticOffset;
-float staticStepSize;
+float staticStepSize = 0.05f;
 
 BYTE* uiInstructionLoc;
 BYTE uiInstruction[2];
 
-AgeSettings ageSettings[4];
+AgeSettings ageSettings[5];
 BOOLEAN bUseUIFix;
 BOOLEAN bDebugConsole;
+
 int iWindowWidth;
 int iWindowHeight;
 int iMaxRetries = 100;
@@ -43,18 +44,14 @@ BOOL WINAPI DllMain(HINSTANCE hModule, DWORD fwdReason, LPVOID lpReserved)
 
 DWORD WINAPI MainThread(LPVOID param)
 {
-    AllocConsole();
-    FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
-
     loadConfig();
     resizeWindow();
 
     boolean keepRunning = TRUE;
     char* modBase = (char*)GetModuleHandleA(NULL);
+    int code = initPointers(modBase);
 
     char s[256] = { 0 };
-    int code = initPointers(modBase);
 
     if (code != 0) {
         keepRunning = FALSE;
@@ -66,13 +63,6 @@ DWORD WINAPI MainThread(LPVOID param)
             MB_OK | MB_ICONERROR
         );
     }
-
-    staticOffset.x = 0;
-    staticOffset.z = 0;
-    staticOffset.y = 0;
-    staticStepSize = 0.05f;
-
-    memcpy(&staticOriginal, staticCam, 3 * sizeof(float));
 
     while (keepRunning)
     {
@@ -193,59 +183,122 @@ int initPointers(char* modBase)
     return a;
 }
 
+// All done in Unicode for CJK support
 void loadConfig()
 {
     WCHAR cfgPathW[1024] = { 0 };
     GetFullPathNameW(CONFIG_FILE, 1024, cfgPathW, NULL);
-    wprintf(L"%ws\n", cfgPathW);
 
     WCHAR buffer[1024] = { 0 };
     
     GetPrivateProfileStringW(CFG_GLOBAL, L"bDebugConsole", L"False", buffer, 1024, cfgPathW);
     bDebugConsole = parseBooleanW(buffer, FALSE);
-    GetPrivateProfileStringW(CFG_GLOBAL, L"bUseUIFix", L"True", buffer, 1024, cfgPathW);
+
+    if (bDebugConsole)
+    {
+        AllocConsole();
+        FILE* f;
+        freopen_s(&f, "CONOUT$", "w", stdout);
+
+        wprintf(L"Config Path: %s\n", cfgPathW);
+    }
+
+    GetPrivateProfileStringW(CFG_FIXES, L"bUseUIFix", L"True", buffer, 1024, cfgPathW);
     bUseUIFix = parseBooleanW(buffer, TRUE);
 
     iWindowWidth = GetPrivateProfileIntW(CFG_GLOBAL, L"iWindowWidth", 1024, cfgPathW);
-    iWindowHeight = GetPrivateProfileIntW(CFG_GLOBAL, L"iWindowHeight", 763, cfgPathW);
+    iWindowHeight = GetPrivateProfileIntW(CFG_GLOBAL, L"iWindowHeight", 768, cfgPathW);
     iMaxRetries = GetPrivateProfileIntW(CFG_GLOBAL, L"iMaxRetries", 100, cfgPathW);
+
+    // Static cam offsets
+    GetPrivateProfileStringW(CFG_GLOBAL, L"fCamStaticOffsetX", L"0", buffer, 1024, cfgPathW);
+    staticOffset.x = parseFloatW(buffer, 0);
+    GetPrivateProfileStringW(CFG_GLOBAL, L"fCamStaticOffsetY", L"0", buffer, 1024, cfgPathW);
+    staticOffset.y = parseFloatW(buffer, 0);
+    GetPrivateProfileStringW(CFG_GLOBAL, L"fCamStaticOffsetZ", L"0", buffer, 1024, cfgPathW);
+    staticOffset.z = parseFloatW(buffer, 0);
+
+    // Load all age-specific options
+    WCHAR section[256];
+    for (int i = 0; i < 5; i++)
+    {
+        switch (i)
+        {
+        case AGE_TODDLER:
+            swprintf_s(section, 256, L"Toddler");
+            break;
+        case AGE_CHILD:
+            swprintf_s(section, 256, L"Child");
+            break;
+        case AGE_TEEN:
+            swprintf_s(section, 256, L"Teen");
+            break;
+        case AGE_ADULT:
+            swprintf_s(section, 256, L"Adult");
+            break;
+        case AGE_ELDER:
+        default:
+            swprintf_s(section, 256, L"Elder");
+            break;
+        }
+
+        AgeSettings *as = &ageSettings[i];
+        
+        GetPrivateProfileStringW(section, L"fCamStaticBaseX", L"0", buffer, 1024, cfgPathW);
+        as->fCamStaticBaseX = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamStaticBaseY", L"0", buffer, 1024, cfgPathW);
+        as->fCamStaticBaseY = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamStaticBaseZ", L"0", buffer, 1024, cfgPathW);
+        as->fCamStaticBaseZ = parseFloatW(buffer, 0);
+
+        GetPrivateProfileStringW(section, L"fCamRotateAroundX", L"0", buffer, 1024, cfgPathW);
+        as->fCamFreeRotAroundX = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamRotateAroundY", L"0", buffer, 1024, cfgPathW);
+        as->fCamFreeRotAroundY = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamRotateAroundZ", L"0", buffer, 1024, cfgPathW);
+        as->fCamFreeRotAroundZ = parseFloatW(buffer, 0);
+    }
 }
 
 void handleInput(char* modBase)
 {
     char msg[1024] = { 0 };
-    if (GetAsyncKeyState(VK_END) & 0x1) {
-        char* opcode = modBase + 0x37BEDC;
-        sprintf_s(msg, 256, "%02hhX %02hhX", opcode[0], opcode[1]);
-        MessageBoxA(NULL, msg, "Info", MB_OK);
+    BOOLEAN doPrint = FALSE;
+
+    if (bDebugConsole)
+    {
+        if (GetAsyncKeyState(VK_LEFT) & 0x1) {
+            staticOffset.z += staticStepSize * 0.7f;
+            staticOffset.x -= staticStepSize * 0.7f;
+            doPrint = TRUE;
+        }
+        if (GetAsyncKeyState(VK_RIGHT) & 0x1) {
+            staticOffset.z -= staticStepSize * 0.7f;
+            staticOffset.x += staticStepSize * 0.7f;
+            doPrint = TRUE;
+        }
+        if (GetAsyncKeyState(VK_UP) & 0x1) {
+            staticOffset.z -= staticStepSize * 0.7f;
+            staticOffset.x -= staticStepSize * 0.7f;
+            doPrint = TRUE;
+        }
+        if (GetAsyncKeyState(VK_DOWN) & 0x1) {
+            staticOffset.z += staticStepSize * 0.7f;
+            staticOffset.x += staticStepSize * 0.7f;
+            doPrint = TRUE;
+        }
+        if (GetAsyncKeyState(VK_DELETE) & 0x1) {
+            staticOffset.y -= staticStepSize;
+            doPrint = TRUE;
+        }
+        if (GetAsyncKeyState(VK_INSERT) & 0x1) {
+            staticOffset.y += staticStepSize;
+            doPrint = TRUE;
+        }
     }
-    if (GetAsyncKeyState(VK_LEFT) & 0x1) {
-        staticOffset.z += staticStepSize * 0.7f;
-        staticOffset.x -= staticStepSize * 0.7f;
-    }
-    if (GetAsyncKeyState(VK_RIGHT) & 0x1) {
-        staticOffset.z -= staticStepSize * 0.7f;
-        staticOffset.x += staticStepSize * 0.7f;
-    }
-    if (GetAsyncKeyState(VK_UP) & 0x1) {
-        staticOffset.z -= staticStepSize * 0.7f;
-        staticOffset.x -= staticStepSize * 0.7f;
-    }
-    if (GetAsyncKeyState(VK_DOWN) & 0x1) {
-        staticOffset.z += staticStepSize * 0.7f;
-        staticOffset.x += staticStepSize * 0.7f;
-    }
-    if (GetAsyncKeyState(VK_DELETE) & 0x1) {
-        staticOffset.y -= staticStepSize;
-    }
-    if (GetAsyncKeyState(VK_INSERT) & 0x1) {
-        staticOffset.y += staticStepSize;
-    }
-    if (GetAsyncKeyState(VK_HOME) & 0x1) {
-        /*sprintf_s(msg, 1024, "X: %f, Z: %f, Y: %f", staticOffset.x, staticOffset.z, staticOffset.y);
-        sprintf_s(msg, 1024, "%s\nX: %f, Z: %f, Y: %f", msg, staticCam->x, staticCam->z, staticCam->y);
-        MessageBoxA(NULL, msg, "Static Cam Offsets", MB_OK);*/
-        *uiToggle = !(*uiToggle);
+
+    if (doPrint) {
+        printf("StaticCam Offset: %f %f %f\n", staticOffset.x, staticOffset.y, staticOffset.z);
     }
 }
 
@@ -253,9 +306,11 @@ void fixStaticCam()
 {
     // No use trying to change these values in free cam mode
     // They get set somewhere else in Body Shop code
-    //if (freecamToggle) return;
 
-    staticCam->x = staticOriginal.x + staticOffset.x;
-    staticCam->z = staticOriginal.z + staticOffset.z;
-    staticCam->y = staticOriginal.y + staticOffset.y;
+    if (!(*freecamToggle))
+    {
+        staticCam->x = ageSettings[*age].fCamStaticBaseX + staticOffset.x;
+        staticCam->y = ageSettings[*age].fCamStaticBaseY + staticOffset.y;
+        staticCam->z = ageSettings[*age].fCamStaticBaseZ + staticOffset.z;
+    }
 }

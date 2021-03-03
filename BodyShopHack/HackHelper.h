@@ -6,11 +6,11 @@
 typedef unsigned char BOOLEAN;
 
 enum Age {
-    TODDLER = 0,
-    CHILD = 1,
-    TEEN = 2,
-    ADULT = 3,
-    ELDER = 4
+    AGE_TODDLER = 0,
+    AGE_CHILD = 1,
+    AGE_TEEN = 2,
+    AGE_ADULT = 3,
+    AGE_ELDER = 4
 };
 
 typedef struct _AgeSettings {
@@ -42,7 +42,9 @@ typedef struct _StaticCamValues {
 // Returns the final address based on the specified offsets
 void* getFinalAddress(uint32_t n_hops, BYTE* base_addr, int init_offset, ...);
 
-BOOLEAN parseBoolean(const char* in, BOOLEAN bDefault);
+BOOLEAN parseBooleanA(const char* in, BOOLEAN bDefault);
 BOOLEAN parseBooleanW(const WCHAR* in, BOOLEAN bDefault);
+
+float parseFloatW(const WCHAR* in, float fDefault);
 
 //void loadConfig();
