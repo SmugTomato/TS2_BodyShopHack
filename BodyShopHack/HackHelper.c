@@ -1,20 +1,22 @@
 #include <Windows.h>
 #include "HackHelper.h"
+#include <stdio.h>
 
+#define CONFIG_FILE "BodyShopHack.ini"
 #define MAX_RETRIES 100
 #define RETRY_WAIT_MS 100
 
-void* getFinalAddress(uint32_t n_hops, char* base_addr, int init_offset, ...)
+void* getFinalAddress(uint32_t n_hops, BYTE* base_addr, int maxRetries, ...)
 {
-    uint32_t address;
+    uint32_t address = 0;
 
     va_list valist;
     int n_tries = 0;
 
-    while(n_tries++ < MAX_RETRIES)
+    while(n_tries++ < maxRetries)
     {
-        address = (uint32_t)base_addr + init_offset;
-        va_start(valist, init_offset);
+        address = (uint32_t)base_addr;
+        va_start(valist, maxRetries);
 
         for (uint32_t i = 0; i < n_hops; i++)
         {
@@ -33,4 +35,28 @@ void* getFinalAddress(uint32_t n_hops, char* base_addr, int init_offset, ...)
     va_end(valist);
 
     return (void*)address;
+}
+
+BOOLEAN parseBoolean(const char* input, BOOLEAN bDefault)
+{
+    // Case insensitive string compares
+    if (!lstrcmpiA(input, "True")) {
+        return TRUE;
+    }
+    else if (!lstrcmpiA(input, "False")) {
+        return FALSE;
+    }
+    return bDefault;
+}
+
+BOOLEAN parseBooleanW(const WCHAR* input, BOOLEAN bDefault)
+{
+    // Case insensitive string compares
+    if (!lstrcmpiW(input, L"True")) {
+        return TRUE;
+    }
+    else if (!lstrcmpiW(input, L"False")) {
+        return FALSE;
+    }
+    return bDefault;
 }

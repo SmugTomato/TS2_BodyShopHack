@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <Windows.h>
+#include <memoryapi.h>
 #include <TlHelp32.h>
 #include <string.h>
 #include <stdlib.h>
@@ -166,7 +167,7 @@ int main()
 	);
 
 	DWORD pid = pi.dwProcessId;
-	while (bodyshopHwnd == NULL) {
+	/*while (bodyshopHwnd == NULL) {
 		bodyshopHwnd = getWindowFromPid(pid);
 		Sleep(100);
 	}
@@ -174,9 +175,9 @@ int main()
 	while (!IsWindowVisible(bodyshopHwnd)) {
 		printf("Waiting for window to be visible...\n");
 		Sleep(500);
-	}
+	}*/
 
-	resize(bodyshopHwnd, &rp);
+	//resize(bodyshopHwnd, &rp);
 
 	// Dll injection test
 	LPVOID pszLibFileRemote = VirtualAllocEx(pi.hProcess, NULL, strlen(DEFAULT_DLL_NAME) + 1, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);

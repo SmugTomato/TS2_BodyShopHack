@@ -1,0 +1,7 @@
+Todo List
+X NOP UI code when UI hidden, Restore when unhidden
+- Read values from .ini file
+- Interpret .ini provided staticCam offsets as view aligned axis
+- Set staticCam position for selected sim age
+- Possibly manually handle switch between freeCam and staticCam to stop flashing screen
+- Find morph value, where is it set, can it be hacked to load pregMorph?
