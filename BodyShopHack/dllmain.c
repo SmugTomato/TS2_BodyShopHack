@@ -34,6 +34,8 @@ int iWindowWidth;
 int iWindowHeight;
 int iMaxRetries = 100;
 
+float lastFrameStaticX = 0;
+
 BOOL WINAPI DllMain(HINSTANCE hModule, DWORD fwdReason, LPVOID lpReserved)
 {
     if (fwdReason == DLL_PROCESS_ATTACH) {
@@ -262,42 +264,52 @@ void loadConfig()
 void handleInput(char* modBase)
 {
     char msg[1024] = { 0 };
-    BOOLEAN doPrint = FALSE;
+    BOOLEAN isChangedOffset = FALSE;
+    StaticCamValues offsetDelta = { .x = 0, .y = 0, .z = 0 };
 
     if (bDebugConsole)
     {
         if (GetAsyncKeyState(VK_LEFT) & 0x1) {
-            staticOffset.z += staticStepSize * 0.7f;
-            staticOffset.x -= staticStepSize * 0.7f;
-            doPrint = TRUE;
+            offsetDelta.z += staticStepSize * 0.7f;
+            offsetDelta.x -= staticStepSize * 0.7f;
+            isChangedOffset = TRUE;
         }
         if (GetAsyncKeyState(VK_RIGHT) & 0x1) {
-            staticOffset.z -= staticStepSize * 0.7f;
-            staticOffset.x += staticStepSize * 0.7f;
-            doPrint = TRUE;
+            offsetDelta.z -= staticStepSize * 0.7f;
+            offsetDelta.x += staticStepSize * 0.7f;
+            isChangedOffset = TRUE;
         }
         if (GetAsyncKeyState(VK_UP) & 0x1) {
-            staticOffset.z -= staticStepSize * 0.7f;
-            staticOffset.x -= staticStepSize * 0.7f;
-            doPrint = TRUE;
+            offsetDelta.z -= staticStepSize * 0.7f;
+            offsetDelta.x -= staticStepSize * 0.7f;
+            isChangedOffset = TRUE;
         }
         if (GetAsyncKeyState(VK_DOWN) & 0x1) {
-            staticOffset.z += staticStepSize * 0.7f;
-            staticOffset.x += staticStepSize * 0.7f;
-            doPrint = TRUE;
+            offsetDelta.z += staticStepSize * 0.7f;
+            offsetDelta.x += staticStepSize * 0.7f;
+            isChangedOffset = TRUE;
         }
         if (GetAsyncKeyState(VK_DELETE) & 0x1) {
-            staticOffset.y -= staticStepSize;
-            doPrint = TRUE;
+            offsetDelta.y -= staticStepSize;
+            isChangedOffset = TRUE;
         }
         if (GetAsyncKeyState(VK_INSERT) & 0x1) {
-            staticOffset.y += staticStepSize;
-            doPrint = TRUE;
+            offsetDelta.y += staticStepSize;
+            isChangedOffset = TRUE;
         }
-    }
 
-    if (doPrint) {
-        printf("StaticCam Offset: %f %f %f\n", staticOffset.x, staticOffset.y, staticOffset.z);
+        if (isChangedOffset) {
+            staticOffset.x += offsetDelta.x;
+            staticOffset.y += offsetDelta.y;
+            staticOffset.z += offsetDelta.z;
+
+            staticCam->x += offsetDelta.x;
+            staticCam->y += offsetDelta.y;
+            staticCam->z += offsetDelta.z;
+
+            lastFrameStaticX = staticCam->x;
+            printf("StaticCam Offset: %f %f %f\n", staticOffset.x, staticOffset.y, staticOffset.z);
+        }
     }
 }
 
@@ -305,11 +317,62 @@ void fixStaticCam()
 {
     // No use trying to change these values in free cam mode
     // They get set somewhere else in Body Shop code
+    if (*freecamToggle) return;
 
-    if (!(*freecamToggle))
-    {
-        staticCam->x = ageSettings[*age].fCamStaticBaseX + staticOffset.x;
-        staticCam->y = ageSettings[*age].fCamStaticBaseY + staticOffset.y;
-        staticCam->z = ageSettings[*age].fCamStaticBaseZ + staticOffset.z;
+    // Unfortunately no easy way to check if zoomed in besides checking staticCam values per age
+    if (lastFrameStaticX != staticCam->x) {
+
+        BOOLEAN isZoomedIn = FALSE;
+        // Interpret these floats as Integers for comparison
+        uint32_t* staticValues = (uint32_t*)staticCam;
+
+        // Need to check if zoomed in
+        switch (*age)
+        {
+        case AGE_TODDLER:
+            if ((staticValues[0]) == 0x3F51EB85 &&
+                (staticValues[1]) == 0x3F51EB85 &&
+                (staticValues[2]) == 0x3F333333)
+            {
+                isZoomedIn = TRUE;
+                printf("Toddler zoomed in\n");
+            }
+            break;
+        case AGE_CHILD:
+            if ((staticValues[0]) == 0x3F666666 &&
+                (staticValues[1]) == 0x3F666666 &&
+                (staticValues[2]) == 0x3F919DA4)
+            {
+                isZoomedIn = TRUE;
+                printf("Child zoomed in\n");
+            }
+            break;
+        case AGE_TEEN:
+            if ((staticValues[0]) == 0x3F666666 &&
+                (staticValues[1]) == 0x3F666666 &&
+                (staticValues[2]) == 0x3FC7AE14)
+            {
+                isZoomedIn = TRUE;
+                printf("Teen zoomed in\n");
+            }
+            break;
+        case AGE_ADULT:
+        case AGE_ELDER:
+        default:
+            if ((staticValues[0]) == 0x3F71EB85 &&
+                (staticValues[1]) == 0x3F71EB85 &&
+                (staticValues[2]) == 0x3FD58106)
+            {
+                isZoomedIn = TRUE;
+                printf("Adult/Elder zoomed in\n");
+            }
+            break;
+        }
+
+        staticCam->x += staticOffset.x;
+        staticCam->y += isZoomedIn ? 0 : staticOffset.y;
+        staticCam->z += staticOffset.z;
     }
+
+    lastFrameStaticX = staticCam->x;
 }

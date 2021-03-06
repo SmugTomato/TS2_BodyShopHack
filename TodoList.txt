@@ -3,6 +3,8 @@ X NOP UI code when UI hidden, Restore when unhidden
 X Read values from .ini file
 X Interpret .ini provided staticCam offsets as view aligned axis
 X Set staticCam position for selected sim age
-- Only set staticCam position when BodyShop updates it, get values from BodyShop and apply offsets
+X Only set staticCam position when BodyShop updates it, get values from BodyShop and apply offsets
 - Possibly manually handle switch between freeCam and staticCam to stop flashing screen
+	Too tricky with zoomed in view handling, not worth the effort
 - Find morph value, where is it set, can it be hacked to load pregMorph?
+	Probably float of range (0.0 - 1.0), probably not worth it, but interesting

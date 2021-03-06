@@ -1,0 +1,19 @@
+Toddler-zoomed:
+	0x3F51EB85
+	0x3F51EB85
+	0x3F333333
+
+Child-zoomed:
+	0x3F666666
+	0x3F666666
+	0x3F919DA4
+
+Teen-zoomed:
+	0x3F666666
+	0x3F666666
+	0x3FC7AE14
+
+Adult-zoomed:
+	0x3F71EB85
+	0x3F71EB85
+	0x3FD58106
