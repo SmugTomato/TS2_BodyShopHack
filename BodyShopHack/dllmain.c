@@ -53,7 +53,7 @@ DWORD WINAPI MainThread(LPVOID param)
 
     char s[256] = { 0 };
 
-    if (code != 0) {
+    if (code) {
         keepRunning = FALSE;
         MessageBoxA(
             NULL,
@@ -169,18 +169,17 @@ int initPointers(char* modBase)
     uiInstructionLoc = modBase + 0x37BEDC;
     memcpy(uiInstruction, uiInstructionLoc, 2);
 
-    int a = 0;
-    if (mouseX == NULL) a++;
-    if (mouseY == NULL) a++;
-    if (age == NULL) a++;
-    if (gender == NULL) a++;
-    if (uiToggle == NULL) a++;
-    if (bgToggle == NULL) a++;
-    if (freecamToggle == NULL) a++;
-    if (freeCam == NULL) a++;
-    if (staticCam == NULL) a++;
+    if (mouseX == NULL) return 1;
+    if (mouseY == NULL) return 1;
+    if (age == NULL) return 1;
+    if (gender == NULL) return 1;
+    if (uiToggle == NULL) return 1;
+    if (bgToggle == NULL) return 1;
+    if (freecamToggle == NULL) return 1;
+    if (freeCam == NULL) return 1;
+    if (staticCam == NULL) return 1;
 
-    return a;
+    return 0;
 }
 
 // All done in Unicode for CJK support
