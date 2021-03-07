@@ -21,7 +21,7 @@ BOOLEAN* freecamToggle;
 FreeCamValues* freeCam;
 StaticCamValues* staticCam;
 StaticCamValues staticOffset;
-float staticStepSize = 0.05f;
+float staticStepSize = 0.01f;
 
 BYTE* uiInstructionLoc;
 BYTE uiInstruction[2];
@@ -136,18 +136,37 @@ void resizeWindow()
 
     if (hMainWnd != NULL)
     {
+        WINDOWINFO windowInfo;
+        TITLEBARINFO titlebarInfo;
+        int width, height;
+        int borderWidth, borderHeight;
+
+        // Get border size for X and Y
+        windowInfo.cbSize = sizeof(WINDOWINFO);
+        GetWindowInfo(hMainWnd, &windowInfo);
+        borderWidth = 2 * windowInfo.cxWindowBorders;
+        borderHeight = 2 * windowInfo.cyWindowBorders;
+
+        // Get titlebar to add height of titlebar to desired content height
+        titlebarInfo.cbSize = sizeof(TITLEBARINFO);
+        GetTitleBarInfo(hMainWnd, &titlebarInfo);
+        borderHeight += titlebarInfo.rcTitleBar.bottom - titlebarInfo.rcTitleBar.top;
+
+        // Add desired content width and height to border size
+        width = iWindowWidth + borderWidth;
+        height = iWindowHeight + borderHeight;
 
         RECT workArea;
         SystemParametersInfoA(SPI_GETWORKAREA, 0, &workArea, 0);
-        int width = iWindowWidth <= workArea.right ? iWindowWidth : workArea.right;
-        int height = iWindowHeight <= workArea.bottom ? iWindowHeight : workArea.bottom;
+        width = width <= workArea.right ? width : workArea.right;
+        height = height <= workArea.bottom ? height : workArea.bottom;
 
         int xPos = (workArea.right - width) / 2;
         int yPos = (workArea.bottom - height) / 2;
 
         SetWindowPos(hMainWnd, NULL, xPos, yPos, width, height, 0);
 
-        printf("Resized window to %d by %d\n", width, height);
+        printf("Resized window to (%d, %d) for desired content size of (%d, %d)\n", width, height, iWindowWidth, iWindowHeight);
     }
     else
     {

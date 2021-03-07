@@ -62,10 +62,27 @@ HWND getWindowFromPid(DWORD pid)
 
 void resize(HWND hwnd, struct ResizerProps * rp)
 {
+	WINDOWINFO windowInfo;
+	int borderWidth, borderHeight;
+	int width, height;
+
+	// Get border size for X and Y
+	windowInfo.cbSize = sizeof(WINDOWINFO);
+	GetWindowInfo(hwnd, &windowInfo);
+	width = 2 * windowInfo.cxWindowBorders;
+	height = windowInfo.cyWindowBorders;
+
+	printf("Borders (%d, %d)\n", width, height);
+
+	width = rp->width + width;
+	height = rp->height + height;
+
+	printf("Window (%d, %d)\n", width, height);
+
 	RECT workArea;
 	SystemParametersInfoA(SPI_GETWORKAREA, 0, &workArea, 0);
-	int width = rp->width <= workArea.right ? rp->width : workArea.right;
-	int height = rp->height <= workArea.bottom ? rp->height : workArea.bottom;
+	width = width <= workArea.right ? rp->width : workArea.right;
+	height = height <= workArea.bottom ? rp->height : workArea.bottom;
 
 	int xPos = (workArea.right - width) / 2;
 	int yPos = (workArea.bottom - height) / 2;
