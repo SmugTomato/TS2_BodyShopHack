@@ -20,13 +20,12 @@ BOOLEAN* freecamToggle;
 
 FreeCamValues* freeCam;
 StaticCamValues* staticCam;
-StaticCamValues staticOffset;
 float staticStepSize = 0.01f;
 
 BYTE* uiInstructionLoc;
 BYTE uiInstruction[2];
 
-AgeSettings ageSettings[5];
+AgeSettings ageSettings[4];
 BOOLEAN bUseUIFix;
 BOOLEAN bDebugConsole;
 
@@ -230,17 +229,9 @@ void loadConfig()
     iWindowHeight = GetPrivateProfileIntW(CFG_GLOBAL, L"iWindowHeight", 768, cfgPathW);
     iMaxRetries = GetPrivateProfileIntW(CFG_GLOBAL, L"iMaxRetries", 100, cfgPathW);
 
-    // Static cam offsets
-    GetPrivateProfileStringW(CFG_GLOBAL, L"fCamStaticOffsetX", L"0", buffer, 1024, cfgPathW);
-    staticOffset.x = parseFloatW(buffer, 0);
-    GetPrivateProfileStringW(CFG_GLOBAL, L"fCamStaticOffsetY", L"0", buffer, 1024, cfgPathW);
-    staticOffset.y = parseFloatW(buffer, 0);
-    GetPrivateProfileStringW(CFG_GLOBAL, L"fCamStaticOffsetZ", L"0", buffer, 1024, cfgPathW);
-    staticOffset.z = parseFloatW(buffer, 0);
-
     // Load all age-specific options
     WCHAR section[256];
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 4; i++)
     {
         switch (i)
         {
@@ -254,29 +245,26 @@ void loadConfig()
             swprintf_s(section, 256, L"Teen");
             break;
         case AGE_ADULT:
-            swprintf_s(section, 256, L"Adult");
-            break;
-        case AGE_ELDER:
         default:
-            swprintf_s(section, 256, L"Elder");
+            swprintf_s(section, 256, L"Adult");
             break;
         }
 
         AgeSettings *as = &ageSettings[i];
         
-        GetPrivateProfileStringW(section, L"fCamStaticBaseX", L"0", buffer, 1024, cfgPathW);
-        as->fCamStaticBaseX = parseFloatW(buffer, 0);
-        GetPrivateProfileStringW(section, L"fCamStaticBaseY", L"0", buffer, 1024, cfgPathW);
-        as->fCamStaticBaseY = parseFloatW(buffer, 0);
-        GetPrivateProfileStringW(section, L"fCamStaticBaseZ", L"0", buffer, 1024, cfgPathW);
-        as->fCamStaticBaseZ = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamOffsetX", L"0", buffer, 1024, cfgPathW);
+        as->fCamOffsetX = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamOffsetY", L"0", buffer, 1024, cfgPathW);
+        as->fCamOffsetY = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamOffsetZ", L"0", buffer, 1024, cfgPathW);
+        as->fCamOffsetZ = parseFloatW(buffer, 0);
 
-        GetPrivateProfileStringW(section, L"fCamRotateAroundX", L"0", buffer, 1024, cfgPathW);
-        as->fCamFreeRotAroundX = parseFloatW(buffer, 0);
-        GetPrivateProfileStringW(section, L"fCamRotateAroundY", L"0", buffer, 1024, cfgPathW);
-        as->fCamFreeRotAroundY = parseFloatW(buffer, 0);
-        GetPrivateProfileStringW(section, L"fCamRotateAroundZ", L"0", buffer, 1024, cfgPathW);
-        as->fCamFreeRotAroundZ = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamOffsetZoomX", L"0", buffer, 1024, cfgPathW);
+        as->fCamOffsetZoomX = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamOffsetZoomY", L"0", buffer, 1024, cfgPathW);
+        as->fCamOffsetZoomY = parseFloatW(buffer, 0);
+        GetPrivateProfileStringW(section, L"fCamOffsetZoomZ", L"0", buffer, 1024, cfgPathW);
+        as->fCamOffsetZoomZ = parseFloatW(buffer, 0);
     }
 }
 
@@ -317,7 +305,7 @@ void handleInput(char* modBase)
             isChangedOffset = TRUE;
         }
 
-        if (isChangedOffset) {
+      /*  if (isChangedOffset) {
             staticOffset.x += offsetDelta.x;
             staticOffset.y += offsetDelta.y;
             staticOffset.z += offsetDelta.z;
@@ -328,7 +316,7 @@ void handleInput(char* modBase)
 
             lastFrameStaticX = staticCam->x;
             printf("StaticCam Offset: %f %f %f\n", staticOffset.x, staticOffset.y, staticOffset.z);
-        }
+        }*/
     }
 }
 
@@ -344,6 +332,7 @@ void fixStaticCam()
         BOOLEAN isZoomedIn = FALSE;
         // Interpret these floats as Integers for comparison
         uint32_t* staticValues = (uint32_t*)staticCam;
+        int curAge = 0;
 
         // Need to check if zoomed in
         switch (*age)
@@ -356,6 +345,7 @@ void fixStaticCam()
                 isZoomedIn = TRUE;
                 printf("Toddler zoomed in\n");
             }
+            curAge = AGE_TODDLER;
             break;
         case AGE_CHILD:
             if ((staticValues[0]) == 0x3F666666 &&
@@ -365,6 +355,7 @@ void fixStaticCam()
                 isZoomedIn = TRUE;
                 printf("Child zoomed in\n");
             }
+            curAge = AGE_CHILD;
             break;
         case AGE_TEEN:
             if ((staticValues[0]) == 0x3F666666 &&
@@ -374,6 +365,7 @@ void fixStaticCam()
                 isZoomedIn = TRUE;
                 printf("Teen zoomed in\n");
             }
+            curAge = AGE_TEEN;
             break;
         case AGE_ADULT:
         case AGE_ELDER:
@@ -385,12 +377,24 @@ void fixStaticCam()
                 isZoomedIn = TRUE;
                 printf("Adult/Elder zoomed in\n");
             }
+            curAge = AGE_ADULT;
             break;
         }
 
-        staticCam->x += staticOffset.x;
-        staticCam->y += isZoomedIn ? 0 : staticOffset.y;
-        staticCam->z += staticOffset.z;
+        printf("Current Age Selected: %d\n", curAge);
+
+        if (isZoomedIn)
+        {
+            staticCam->x += ageSettings[curAge].fCamOffsetZoomX;
+            staticCam->y += ageSettings[curAge].fCamOffsetZoomY;
+            staticCam->z += ageSettings[curAge].fCamOffsetZoomZ;
+        }
+        else
+        {
+            staticCam->x += ageSettings[curAge].fCamOffsetX;
+            staticCam->y += ageSettings[curAge].fCamOffsetY;
+            staticCam->z += ageSettings[curAge].fCamOffsetZ;
+        }
     }
 
     lastFrameStaticX = staticCam->x;

@@ -109,9 +109,10 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <EnableUAC>false</EnableUAC>
+      <ProgramDatabaseFile />
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -147,6 +148,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="resizer.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BodyShopLauncher.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="E:\Projects\BodyShopHack\ico\1.ico" />
+    <Image Include="E:\Projects\BodyShopHack\ico\2.ico" />
+    <Image Include="E:\Projects\BodyShopHack\ico\3.ico" />
+    <Image Include="E:\Projects\BodyShopHack\ico\4.ico" />
+    <Image Include="E:\Projects\BodyShopHack\ico\5.ico" />
+    <Image Include="E:\Projects\BodyShopHack\ico\6.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

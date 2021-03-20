@@ -14,12 +14,12 @@ enum Age {
 };
 
 typedef struct _AgeSettings {
-    float fCamStaticBaseX;
-    float fCamStaticBaseY;
-    float fCamStaticBaseZ;
-    float fCamFreeRotAroundX;
-    float fCamFreeRotAroundY;
-    float fCamFreeRotAroundZ;
+    float fCamOffsetX;
+    float fCamOffsetY;
+    float fCamOffsetZ;
+    float fCamOffsetZoomX;
+    float fCamOffsetZoomY;
+    float fCamOffsetZoomZ;
 } AgeSettings;
 
 typedef struct _FreeCamValues {

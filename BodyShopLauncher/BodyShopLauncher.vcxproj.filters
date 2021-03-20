@@ -24,4 +24,34 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BodyShopLauncher.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="E:\Projects\BodyShopHack\ico\6.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="E:\Projects\BodyShopHack\ico\4.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="E:\Projects\BodyShopHack\ico\2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="E:\Projects\BodyShopHack\ico\1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="E:\Projects\BodyShopHack\ico\3.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="E:\Projects\BodyShopHack\ico\5.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
