@@ -1,3 +1,5 @@
+#include <strsafe.h>
+
 #include "dllmain.h"
 #include "HackHelper.h"
 
@@ -55,13 +57,24 @@ DWORD WINAPI MainThread(LPVOID param)
     char s[256] = { 0 };
 
     if (code) {
+
+        WCHAR cfgPathW[1024] = { 0 };
+        GetFullPathNameW(CONFIG_FILE, 1024, cfgPathW, NULL);
+
+        WCHAR errorMessageW[2048] = { 0 };
+        StringCbPrintfW(errorMessageW, 2048,
+            L"%s\n%s\n\n'%s'",
+            L"Failed to initialize one or more pointers, camera hack inactive.",
+            L"Please try increasing the 'iMaxRetries' value in:",
+            cfgPathW);
+
         keepRunning = FALSE;
-        MessageBoxA(
+
+        MessageBoxW(
             NULL,
-            "Failed to initialize one or more pointers\n"
-            "Try increasing the maxRetries value in the config file",
-            NULL,
-            MB_OK | MB_ICONERROR
+            errorMessageW,
+            L"BodyShopHack Error",
+            MB_OK | MB_ICONERROR | MB_SYSTEMMODAL
         );
     }
 
