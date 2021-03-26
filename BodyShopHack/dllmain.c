@@ -80,23 +80,30 @@ DWORD WINAPI MainThread(LPVOID param)
 
     while (keepRunning)
     {
-        handleInput(modBase);
-        fixStaticCam();
+        __try {
+            handleInput(modBase);
+            fixStaticCam();
 
-        // Toggle UI clickability
-        DWORD oldProtect;
-        if (*uiToggle) {
-            VirtualProtect(uiInstructionLoc, 2, PAGE_EXECUTE_READWRITE, &oldProtect);
-            memcpy(uiInstructionLoc, uiInstruction, 2);
-            VirtualProtect(uiInstructionLoc, 2, oldProtect, &oldProtect);
-        }
-        else {
-            VirtualProtect(uiInstructionLoc, 2, PAGE_EXECUTE_READWRITE, &oldProtect);
-            memset(uiInstructionLoc, 0x90, 2);
-            VirtualProtect(uiInstructionLoc, 2, oldProtect, &oldProtect);
-        }
+            // Toggle UI clickability
+            DWORD oldProtect;
+            if (*uiToggle) {
+                VirtualProtect(uiInstructionLoc, 2, PAGE_EXECUTE_READWRITE, &oldProtect);
+                memcpy(uiInstructionLoc, uiInstruction, 2);
+                VirtualProtect(uiInstructionLoc, 2, oldProtect, &oldProtect);
+            }
+            else {
+                VirtualProtect(uiInstructionLoc, 2, PAGE_EXECUTE_READWRITE, &oldProtect);
+                memset(uiInstructionLoc, 0x90, 2);
+                VirtualProtect(uiInstructionLoc, 2, oldProtect, &oldProtect);
+            }
 
-        Sleep(1);
+            Sleep(1);
+        }
+        // Access Violation Exception tends to happen on BS Exit
+        // because I can't control when it frees resources
+        __except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION) {
+            keepRunning = FALSE;
+        }
     }
 
     FreeLibraryAndExitThread((HMODULE)param, 0);
